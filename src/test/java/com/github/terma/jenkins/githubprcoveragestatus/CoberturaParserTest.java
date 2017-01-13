@@ -29,7 +29,10 @@ public class CoberturaParserTest {
         String filePath = CoberturaParserTest.class.getResource(
                 "/com/github/terma/jenkins/githubprcoveragestatus/CoberturaParserTest/cobertura.xml").getFile();
 
-        Assert.assertEquals(0.94, new CoberturaParser().get(filePath), 0.1);
+        SingleFileCoverageData result = new CoberturaParser().get(filePath);
+        float coverage = (float)result.coveredLines / (float)(result.coveredLines + result.missedLines);
+
+        Assert.assertEquals(0.94, coverage, 0.1);
     }
 
     @Test
@@ -37,7 +40,10 @@ public class CoberturaParserTest {
         String filePath = CoberturaParserTest.class.getResource(
                 "/com/github/terma/jenkins/githubprcoveragestatus/CoberturaParserTest/cobertura-zero-coverage.xml").getFile();
 
-        Assert.assertEquals(0, new CoberturaParser().get(filePath), 0.1);
+        SingleFileCoverageData result = new CoberturaParser().get(filePath);
+        float coverage = (float)result.coveredLines / (float)(result.coveredLines + result.missedLines);
+
+        Assert.assertEquals(0, coverage, 0.1);
     }
 
     @Test
@@ -45,7 +51,10 @@ public class CoberturaParserTest {
         String filePath = CoberturaParserTest.class.getResource(
                 "/com/github/terma/jenkins/githubprcoveragestatus/CoberturaParserTest/cobertura-zero-branch-rate.xml").getFile();
 
-        Assert.assertEquals(0.25, new CoberturaParser().get(filePath), 0.1);
+        SingleFileCoverageData result = new CoberturaParser().get(filePath);
+        float coverage = (float)result.coveredLines / (float)(result.coveredLines + result.missedLines);
+
+        Assert.assertEquals(0.25, coverage, 0.1);
     }
 
     @Test
@@ -53,7 +62,10 @@ public class CoberturaParserTest {
         String filePath = CoberturaParserTest.class.getResource(
                 "/com/github/terma/jenkins/githubprcoveragestatus/CoberturaParserTest/cobertura-zero-line-rate.xml").getFile();
 
-        Assert.assertEquals(0.5, new CoberturaParser().get(filePath), 0.1);
+        SingleFileCoverageData result = new CoberturaParser().get(filePath);
+        float coverage = (float)result.coveredLines / (float)(result.coveredLines + result.missedLines);
+
+        Assert.assertEquals(0.5, coverage, 0.1);
     }
 
     @Test(expected = IllegalArgumentException.class)

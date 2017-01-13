@@ -63,7 +63,7 @@ public class CompareCoverageAction extends Recorder implements SimpleBuildStep {
         }
 
         final float masterCoverage = ServiceRegistry.getMasterCoverageRepository().get(gitUrl);
-        final float coverage = ServiceRegistry.getCoverageRepository().get(workspace);
+        final float coverage = ServiceRegistry.getCoverageRepository(listener).get(workspace);
 
         final Message message = new Message(coverage, masterCoverage);
         buildLog.println(message.forConsole());

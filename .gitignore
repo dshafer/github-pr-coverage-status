@@ -12,3 +12,6 @@ work/
 .project
 .settings/
 build/
+
+# OSX cruft
+.DS_Store

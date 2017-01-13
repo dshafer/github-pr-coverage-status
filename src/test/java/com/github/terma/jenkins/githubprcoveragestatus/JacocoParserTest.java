@@ -29,7 +29,10 @@ public class JacocoParserTest {
         String filePath = JacocoParserTest.class.getResource(
                 "/com/github/terma/jenkins/githubprcoveragestatus/JacocoParserTest/jacoco.xml").getFile();
 
-        Assert.assertEquals(0.22, new JacocoParser().get(filePath), 0.1);
+        SingleFileCoverageData result = new JacocoParser().get(filePath);
+        float coverage = (float)result.coveredLines / (float)(result.coveredLines + result.missedLines);
+
+        Assert.assertEquals(0.22, coverage, 0.1);
     }
 
     @Test
@@ -37,7 +40,10 @@ public class JacocoParserTest {
         String filePath = JacocoParserTest.class.getResource(
                 "/com/github/terma/jenkins/githubprcoveragestatus/JacocoParserTest/jacoco-no-code.xml").getFile();
 
-        Assert.assertEquals(0, new JacocoParser().get(filePath), 0.1);
+        SingleFileCoverageData result = new JacocoParser().get(filePath);
+        float coverage = (float)result.coveredLines / (float)(result.coveredLines + result.missedLines);
+
+        Assert.assertEquals(0, coverage, 0.1);
     }
 
     @Test

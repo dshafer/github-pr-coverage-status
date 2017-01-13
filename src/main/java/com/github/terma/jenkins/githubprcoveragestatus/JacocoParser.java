@@ -35,9 +35,9 @@ class JacocoParser implements CoverageReportParser {
     private static final String MISSED_XPATH = "/report/counter[@type='LINE']/@missed";
     private static final String COVERAGE_XPATH = "/report/counter[@type='LINE']/@covered";
 
-    private float getByXpath(final String filePath, final String content, final String xpath) {
+    private int getByXpath(final String filePath, final String content, final String xpath) {
         try {
-            return Float.parseFloat(XmlUtils.findInXml(content, xpath));
+            return Integer.parseInt(XmlUtils.findInXml(content, xpath));
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(
                     "Strange Jacoco report!\n" +
@@ -48,7 +48,7 @@ class JacocoParser implements CoverageReportParser {
     }
 
     @Override
-    public float get(final String jacocoFilePath) {
+    public SingleFileCoverageData get(final String jacocoFilePath) {
         final String content;
         try {
             content = FileUtils.readFileToString(new File(jacocoFilePath));
@@ -57,14 +57,11 @@ class JacocoParser implements CoverageReportParser {
                     "Can't read Jacoco report by path: " + jacocoFilePath);
         }
 
-        final float lineMissed = getByXpath(jacocoFilePath, content, MISSED_XPATH);
-        final float lineCovered = getByXpath(jacocoFilePath, content, COVERAGE_XPATH);
-        final float lines = lineCovered + lineMissed;
-        if (lines == 0) {
-            return 0;
-        } else {
-            return lineCovered / (lines);
-        }
+        SingleFileCoverageData result = new SingleFileCoverageData();
+        result.fileName = jacocoFilePath;
+        result.missedLines = getByXpath(jacocoFilePath, content, MISSED_XPATH);
+        result.coveredLines = getByXpath(jacocoFilePath, content, COVERAGE_XPATH);
+        return result;
     }
 
 }

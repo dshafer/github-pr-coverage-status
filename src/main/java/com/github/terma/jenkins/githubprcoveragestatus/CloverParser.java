@@ -50,7 +50,7 @@ class CloverParser implements CoverageReportParser {
     }
 
     @Override
-    public float get(final String cloverFilePath) {
+    public SingleFileCoverageData get(final String cloverFilePath) {
         final String content;
         try {
             content = FileUtils.readFileToString(new File(cloverFilePath));
@@ -59,11 +59,14 @@ class CloverParser implements CoverageReportParser {
                     "Can't read Clover report by path: " + cloverFilePath);
         }
 
-        final float statements = getByXpath(cloverFilePath, content, TOTAL_STATEMENTS_XPATH);
-        final float coveredStatements = getByXpath(cloverFilePath, content, COVER_STATEMENTS_XPATH);
+        final int statements = getByXpath(cloverFilePath, content, TOTAL_STATEMENTS_XPATH);
+        final int coveredStatements = getByXpath(cloverFilePath, content, COVER_STATEMENTS_XPATH);
 
-        if (statements == 0) return 0;
-        else return coveredStatements / statements;
+        SingleFileCoverageData result = new SingleFileCoverageData();
+        result.fileName = cloverFilePath;
+        result.coveredLines = coveredStatements;
+        result.missedLines = statements - coveredStatements;
+        return result;
     }
 
 }

@@ -48,12 +48,31 @@ class CoberturaParser implements CoverageReportParser {
     }
 
     @Override
-    public float get(String coberturaFilePath) {
+    public SingleFileCoverageData get(String coberturaFilePath) {
         try {
             String content = FileUtils.readFileToString(new File(coberturaFilePath));
             float lineRate = Float.parseFloat(findFirst(content, "line-rate=\"([0-9.]+)\""));
             float branchRate = Float.parseFloat(findFirst(content, "branch-rate=\"([0-9.]+)\""));
-            return lineRate / 2 + branchRate / 2;
+
+            float linesValid;
+            try {
+                linesValid = Float.parseFloat(findFirst(content, "lines-valid=\"([0-9.]+)\""));
+            } catch (IllegalArgumentException e) {
+                linesValid = 0;
+            }
+
+            float linesCovered;
+            try {
+                linesCovered = Float.parseFloat(findFirst(content, "lines-covered=\"([0-9.]+)\""));
+            } catch (IllegalArgumentException e) {
+                linesCovered = lineRate * linesValid;
+            }
+
+            SingleFileCoverageData result = new SingleFileCoverageData();
+            result.fileName = coberturaFilePath;
+            result.coveredLines = Math.round(linesCovered);
+            result.missedLines = Math.round(linesValid - linesCovered);
+            return result;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

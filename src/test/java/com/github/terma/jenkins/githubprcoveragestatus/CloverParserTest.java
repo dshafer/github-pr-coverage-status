@@ -28,8 +28,9 @@ public class CloverParserTest {
     public void extractCoverageFromCloverReport() throws IOException {
         String filePath = CloverParserTest.class.getResource(
                 "/com/github/terma/jenkins/githubprcoveragestatus/CloverParserTest/clover.xml").getFile();
-
-        Assert.assertEquals(0.5, new CloverParser().get(filePath), 0.1);
+        SingleFileCoverageData result = new CloverParser().get(filePath);
+        float coverage = (float)result.coveredLines / (float)(result.coveredLines + result.missedLines);
+        Assert.assertEquals(0.5, coverage, 0.1);
     }
 
     @Test
@@ -37,7 +38,9 @@ public class CloverParserTest {
         String filePath = CloverParserTest.class.getResource(
                 "/com/github/terma/jenkins/githubprcoveragestatus/CloverParserTest/clover-zero-statements-coverage.xml").getFile();
 
-        Assert.assertEquals(0, new CloverParser().get(filePath), 0.1);
+        SingleFileCoverageData result = new CloverParser().get(filePath);
+        float coverage = (float)result.coveredLines / (float)(result.coveredLines + result.missedLines);
+        Assert.assertEquals(0, coverage, 0.1);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -45,7 +48,9 @@ public class CloverParserTest {
         String filePath = CloverParserTest.class.getResource(
                 "/com/github/terma/jenkins/githubprcoveragestatus/CloverParserTest/clover-invalid-no-statements.xml").getFile();
 
-        Assert.assertEquals(0, new CloverParser().get(filePath), 0.1);
+        SingleFileCoverageData result = new CloverParser().get(filePath);
+        float coverage = (float)result.coveredLines / (float)(result.coveredLines + result.missedLines);
+        Assert.assertEquals(0, coverage, 0.1);
     }
 
     @Test
@@ -53,7 +58,9 @@ public class CloverParserTest {
         String filePath = CloverParserTest.class.getResource(
                 "/com/github/terma/jenkins/githubprcoveragestatus/CloverParserTest/clover-zero-statements.xml").getFile();
 
-        Assert.assertEquals(0, new CloverParser().get(filePath), 0.1);
+        SingleFileCoverageData result = new CloverParser().get(filePath);
+        float coverage = (float)result.coveredLines / (float)(result.coveredLines + result.missedLines);
+        Assert.assertEquals(0, coverage, 0.1);
     }
 
 }

@@ -1,5 +1,7 @@
 package com.github.terma.jenkins.githubprcoveragestatus;
 
+import hudson.model.TaskListener;
+
 public class ServiceRegistry {
 
     private static MasterCoverageRepository masterCoverageRepository;
@@ -15,8 +17,8 @@ public class ServiceRegistry {
         ServiceRegistry.masterCoverageRepository = masterCoverageRepository;
     }
 
-    public static CoverageRepository getCoverageRepository() {
-        return coverageRepository != null ? coverageRepository : new GetCoverageCallable();
+    public static CoverageRepository getCoverageRepository(TaskListener listener) {
+        return coverageRepository != null ? coverageRepository : new GetCoverageCallable(listener);
     }
 
     public static void setCoverageRepository(CoverageRepository coverageRepository) {

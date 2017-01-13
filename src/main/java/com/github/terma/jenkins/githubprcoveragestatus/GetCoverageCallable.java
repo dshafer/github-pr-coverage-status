@@ -19,6 +19,7 @@ package com.github.terma.jenkins.githubprcoveragestatus;
 
 import hudson.FilePath;
 import hudson.Util;
+import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import jenkins.MasterToSlaveFileCallable;
 import org.apache.tools.ant.DirectoryScanner;
@@ -26,17 +27,24 @@ import org.apache.tools.ant.types.FileSet;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
 final class GetCoverageCallable extends MasterToSlaveFileCallable<Float> implements CoverageRepository {
 
-    private static List<Float> getFloats(File ws, String path, CoverageReportParser parser) {
+    private TaskListener listener;
+    public GetCoverageCallable(TaskListener listener) {
+        super();
+        this.listener = listener;
+    }
+
+    private static List<SingleFileCoverageData> getCoverage(File ws, String path, CoverageReportParser parser) {
         FileSet fs = Util.createFileSet(ws, path);
         DirectoryScanner ds = fs.getDirectoryScanner();
         String[] files = ds.getIncludedFiles();
-        List<Float> cov = new ArrayList<Float>();
+        List<SingleFileCoverageData> cov = new ArrayList<SingleFileCoverageData>();
         for (String file : files) cov.add(parser.get(new File(ds.getBasedir(), file).getAbsolutePath()));
         return cov;
     }
@@ -44,25 +52,31 @@ final class GetCoverageCallable extends MasterToSlaveFileCallable<Float> impleme
     @Override
     public float get(final FilePath workspace) throws IOException, InterruptedException {
         if (workspace == null) throw new IllegalArgumentException("Workspace should not be null!");
-        return workspace.act(new GetCoverageCallable());
+        return workspace.act(new GetCoverageCallable(listener));
     }
 
     @Override
     public Float invoke(final File ws, final VirtualChannel channel) throws IOException {
-        final List<Float> cov = new ArrayList<Float>();
-        cov.addAll(getFloats(ws, "**/cobertura.xml", new CoberturaParser()));
-        cov.addAll(getFloats(ws, "**/cobertura-coverage.xml", new CoberturaParser()));
-        cov.addAll(getFloats(ws, "**/jacoco.xml", new JacocoParser()));
-        cov.addAll(getFloats(ws, "**/jacocoTestReport.xml", new JacocoParser())); //default for gradle
-        cov.addAll(getFloats(ws, "**/clover.xml", new CloverParser()));
+        final List<SingleFileCoverageData> cov = new ArrayList<SingleFileCoverageData>();
+        cov.addAll(getCoverage(ws, "**/cobertura.xml", new CoberturaParser()));
+        cov.addAll(getCoverage(ws, "**/cobertura-coverage.xml", new CoberturaParser()));
+        cov.addAll(getCoverage(ws, "**/jacoco.xml", new JacocoParser()));
+        cov.addAll(getCoverage(ws, "**/jacocoTestReport.xml", new JacocoParser())); //default for gradle
+        cov.addAll(getCoverage(ws, "**/clover.xml", new CloverParser()));
+        final PrintStream buildLog = listener.getLogger();
 
-        float s = 0;
-        for (float v : cov) s += v;
+        float missed = 0;
+        float covered = 0;
+        for (SingleFileCoverageData c : cov){
+            missed += c.missedLines;
+            covered += c.coveredLines;
+            buildLog.println(c.getSummary());
+        }
 
-        if (cov.isEmpty()) {
+        if (cov.isEmpty() || (covered + missed == 0)) {
             return 0f;
         } else {
-            return s / cov.size();
+            return covered / (covered + missed);
         }
     }
 
